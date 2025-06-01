@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: quart-telegram-bot
+    name: telegram-broadcast-bot
     env: python
     plan: free
     buildCommand: "pip install -r requirements.txt"
