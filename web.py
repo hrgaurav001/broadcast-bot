@@ -20,6 +20,8 @@ app = Quart(__name__)
 bot = Bot(token=BOT_TOKEN)
 application = ApplicationBuilder().token(BOT_TOKEN).build()
 
+initialized = False  # Initialization flag
+
 # Commands
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Hello! This is your bot running with Quart and MongoDB.")
@@ -29,9 +31,11 @@ application.add_handler(CommandHandler("start", start))
 # Init before webhook handling starts
 @app.before_serving
 async def before_serving():
-    await bot.initialize()
-    await application.initialize()
-    await application.post_init()
+    global initialized
+    if not initialized:
+        await bot.initialize()
+        await application.initialize()
+        initialized = True
 
 @app.route("/")
 async def home():
