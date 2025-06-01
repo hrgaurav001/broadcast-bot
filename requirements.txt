@@ -1,0 +1,4 @@
+quart==0.18.2
+python-telegram-bot==20.6
+motor==3.1.1
+werkzeug==2.3.7
