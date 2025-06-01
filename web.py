@@ -1,37 +1,41 @@
 import os
-from quart import Quart, request, render_template
+import logging
+from quart import Quart, request
 from telegram import Update, Bot
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-# Load from environment
+# Load env vars
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 MONGO_URI = os.environ.get("MONGO_URI")
 
-app = Quart(__name__)
+# Logging setup
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
 
-# Initialize bot and application
+# Quart app and Telegram bot
+app = Quart(__name__)
 bot = Bot(token=BOT_TOKEN)
 application = ApplicationBuilder().token(BOT_TOKEN).build()
 
-# Global flag to track initialization
-initialized = False
-
-# Define command handlers
+# Commands
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Hello! This is your bot running with Quart and MongoDB.")
 
 application.add_handler(CommandHandler("start", start))
 
+# Init before webhook handling starts
 @app.before_serving
-async def init_telegram():
-    global initialized
-    if not initialized:
-        await application.initialize()
-        initialized = True
+async def before_serving():
+    await bot.initialize()
+    await application.initialize()
+    await application.post_init()
 
 @app.route("/")
-async def admin():
-    return await render_template("admin.html")
+async def home():
+    return "Bot is live and using Quart webhook."
 
 @app.route(f"/webhook/{BOT_TOKEN}", methods=["POST"])
 async def webhook():
@@ -39,6 +43,3 @@ async def webhook():
     update = Update.de_json(data, bot)
     await application.process_update(update)
     return "OK"
-
-if __name__ == "__main__":
-    app.run()
