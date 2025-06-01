@@ -1,7 +1,14 @@
 services:
   - type: web
-    name: telegram-broadcast-bot
+    name: quart-telegram-broadcast-bot
     env: python
     plan: free
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "hypercorn web:app --bind 0.0.0.0:$PORT"
+    startCommand: "hypercorn bot:app --bind 0.0.0.0:$PORT"
+    envVars:
+      - key: BOT_TOKEN
+        fromDatabase: true
+      - key: MONGO_URI
+        fromDatabase: true
+      - key: OWNER_ID
+        fromDatabase: true
